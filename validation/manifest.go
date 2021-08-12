@@ -5,13 +5,15 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ovrclk/akash/provider/cluster/util"
 	"github.com/pkg/errors"
+
+	"github.com/ovrclk/akash/provider/cluster/util"
+
+	k8svalidation "k8s.io/apimachinery/pkg/util/validation"
 
 	"github.com/ovrclk/akash/manifest"
 	"github.com/ovrclk/akash/types"
 	dtypes "github.com/ovrclk/akash/x/deployment/types"
-	k8svalidation "k8s.io/apimachinery/pkg/util/validation"
 )
 
 var (
@@ -158,7 +160,6 @@ func ValidateManifestWithDeployment(m *manifest.Manifest, dgroups []dtypes.Group
 	rgroups := make([]types.ResourceGroup, 0, len(dgroups))
 	for _, dgroup := range dgroups {
 		rgroups = append(rgroups, dgroup)
-
 	}
 
 	return validateManifestDeploymentGroups(m.GetGroups(), rgroups)
@@ -218,12 +219,17 @@ deploymentGroupLoop:
 			}
 
 			if !drec.Resources.CPU.Equal(mrec.Resources.CPU) ||
-				!drec.Resources.Memory.Equal(mrec.Resources.Memory) ||
-				!drec.Resources.Storage.Equal(mrec.Resources.Storage) {
+				!drec.Resources.Memory.Equal(mrec.Resources.Memory) {
 				continue
 			}
 
-			// If the manifest group contains more resources than the deploynent group, then
+			// if !drec.Resources.CPU.Equal(mrec.Resources.CPU) ||
+			// 	!drec.Resources.Memory.Equal(mrec.Resources.Memory) ||
+			// 	!drec.Resources.Storage.Equal(mrec.Resources.Storage) {
+			// 	continue
+			// }
+
+			// If the manifest group contains more resources than the deployment group, then
 			// fulfill the deployment group entirely
 			if mrec.Count >= drec.Count {
 				mrec.Count -= drec.Count
